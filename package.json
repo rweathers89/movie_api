@@ -14,9 +14,12 @@
     "body-parser": "^1.20.2",
     "express": "^4.18.2",
     "lodash": "^4.17.21",
-    "morgan": "^1.10.0"
+    "mongoose": "^8.1.1",
+    "morgan": "^1.10.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "eslint": "^8.56.0"
+    "eslint": "^8.56.0",
+    "nodemon": "^3.0.3"
   }
 }
