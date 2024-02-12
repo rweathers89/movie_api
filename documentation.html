@@ -42,24 +42,27 @@
                     <td>
                         A JSON object holding data about the user to add, structured like:<br>
                         { id: 1,<br>
-                        name: 'Maxine',<br>
-                        favoriteMovies: ['Set it Off'] },<br>
+                        Username: 'alicia_saxton',<br>
+                        Password: 'securepass456',<br>
+                        Email: 'alicia.saxton@gmail.com',<br>
+                        Birthday: '1985-11-22',<br>
+                        },
                     </td>
                     <td>
                         A JSON object holding data about the user that was added, including their assigned ID:<br>
                         { id: '###',<br>
-                        name: 'Andre', <br>
+                        Username: 'alicia_saxton', <br>
                         favoriteMovies: ['Real Women Have Curves'] }                
                     </td>
                 </tr>
                 <tr>
                     <td>Add a movie title to a user's database</td>
-                    <td>/users/[id]/[movieTitle]</td>
+                    <td>/users/[username]/[movieTitle]</td>
                     <td>POST</td>
                     <td>
                         A JSON object holding data about the user's favorite Movie title, structured like:<br>
-                        {'name': 'Brenda',<br> 
-                        'favoriteMovie': ['Everything Everywhere All at Once'] }
+                        {'username': 'brenda_song',<br> 
+                        'favoriteMovies': ['Everything Everywhere All at Once'] }
                     </td>
                     <td>
                         A text message stating the movie that was 
@@ -75,7 +78,7 @@
                 </tr>
                 <tr>
                     <td>Get a list of movies by title</td>
-                    <td>/movies/[title]</td>
+                    <td>/movies/[movieName]</td>
                     <td>GET</td>
                     <td>None</td>
                     <td>
@@ -84,7 +87,7 @@
                         'Genre': { 'Name': 'Action', 'Description': 'description of the genre' } <br>                                               
                         'Description': 'description of the movie', <br>
                         'Director': { 'Name': 'F. Gary Gray' , 'Bio': 'bio of director', 'Birth Year': 1969 } <br>
-                        'Image URL': 'http//:imagelink.jpg' <br>
+                        'ImagePath': 'http//:imagelink.jpg' <br>
                         'Release Year': 1996 }
                     </td>                
                 </tr>
@@ -113,21 +116,21 @@
                 </tr>
                 <tr>
                     <td>Update user name</td>
-                    <td>/users/id</td>
+                    <td>/users/username</td>
                     <td>PUT</td>
                     <td>none</td>
                     <td>Return JSON object with updated user Name </td>                
                 </tr>
                 <tr>
                     <td>Remove movie title from a user's database</td>
-                    <td>/users/[id]/[movieTitle]</td>
+                    <td>/users/[username]/[movieName]</td>
                     <td>DELETE</td>
                     <td>None</td>
                     <td>A text message stating that a movie has been deleted from a user's array of movies</td>                
                 </tr>
                 <tr>
                     <td>Deregister a user from the API</td>
-                    <td>/users/[id]</td>
+                    <td>/users/[username]</td>
                     <td>DELETE</td>
                     <td>None</td>
                     <td>A text message stating that a user has been deleted </td>                
