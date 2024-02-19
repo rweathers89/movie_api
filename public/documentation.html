@@ -35,7 +35,7 @@
               </tr>
             </thead>
             <tbody>
-                <tr>
+                <tr> <!--CREATE - POST -->
                     <td>Add a new user</td>
                     <td>/users</td>
                     <td>POST</td>
@@ -55,30 +55,56 @@
                         favoriteMovies: ['Real Women Have Curves'] }                
                     </td>
                 </tr>
+                
                 <tr>
                     <td>Add a movie title to a user's database</td>
-                    <td>/users/[username]/[movieTitle]</td>
+                    <td>/users/[username]/movies/[movieID]</td>
                     <td>POST</td>
                     <td>
                         A JSON object holding data about the user's favorite Movie title, structured like:<br>
                         {'username': 'brenda_song',<br> 
-                        'favoriteMovies': ['Everything Everywhere All at Once'] }
+                        'favoriteMovies': [ 1122334455 ] }
                     </td>
                     <td>
                         A text message stating the movie that was 
                         successfully added to the user's movie database
                     </td>                
                 </tr>
-                <tr>
-                    <td>Get a list of movies</td>
+                
+                <tr> <!-- READ - GET -->
+                    <td>Get a list of all users</td>
+                    <td>/users</td>
+                    <td>GET</td>
+                    <td>None</td>
+                    <td>A JSON object holding data about the users</td>                
+                </tr>
+                
+                <tr> 
+                    <td>Get a user by username</td>
+                    <td>/users/[Username]</td>
+                    <td>GET</td>
+                    <td>None</td>
+                    <td>A JSON object holding data about the request user, structured like:<br>
+                        { 'id': '11223344', <br>
+                        'Username': 'brenda_song', <br> 
+                        'Password': 'securepass456', <br>
+                        'Email': 'brenda.song@aol.com', <br>
+                        'Birthday': '1980-01-02', <br>
+                        'FavoriteMovies': [movieID] }
+                    </td>                
+                </tr>
+                
+                <tr> 
+                    <td>Get a list of all movies</td>
                     <td>/movies</td>
                     <td>GET</td>
                     <td>None</td>
                     <td>A JSON object holding data about the movies</td>                
                 </tr>
+                
                 <tr>
                     <td>Get a list of movies by title</td>
-                    <td>/movies/[movieName]</td>
+                    <td>/movies/[Title]</td>
                     <td>GET</td>
                     <td>None</td>
                     <td>
@@ -91,6 +117,7 @@
                         'Release Year': 1996 }
                     </td>                
                 </tr>
+                
                 <tr>
                     <td>Get data about a genre</td>
                     <td>/movies/genre/[genreName]</td>
@@ -102,6 +129,7 @@
                         'Description': 'description od genre'}
                     </td>                
                 </tr>
+                
                 <tr>
                     <td>Get data about a director</td>
                     <td>/movies/directors/[Director Name]</td>
@@ -114,20 +142,23 @@
                         'Birth Year': 1969 }
                     </td>                
                 </tr>
-                <tr>
+                
+                <tr> <!-- UPDATE - PUT -->
                     <td>Update user name</td>
                     <td>/users/username</td>
                     <td>PUT</td>
                     <td>none</td>
                     <td>Return JSON object with updated user Name </td>                
                 </tr>
-                <tr>
+                
+                <tr> <!-- DELETE - DELETE -->
                     <td>Remove movie title from a user's database</td>
-                    <td>/users/[username]/[movieName]</td>
+                    <td>/users/[username]/movies/[movieID]</td>
                     <td>DELETE</td>
                     <td>None</td>
                     <td>A text message stating that a movie has been deleted from a user's array of movies</td>                
                 </tr>
+                
                 <tr>
                     <td>Deregister a user from the API</td>
                     <td>/users/[username]</td>
