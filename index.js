@@ -1,3 +1,13 @@
+//Import necessary libraries and modules
+const mongoose = require('mongoose'); // mongoose for interacting with MongoDB
+const Models = require('./models.js'); // import custome data models
+
+const Movies = Models.Movie;
+const Users = Models.User;
+
+mongoose.connect('mongodb://localhost:27017/cfDB', 
+{ useNewUrlParser: true, useUnifiedTopology: true });
+
 const express = require('express'), 
       morgan = require('morgan'),
       bodyParser = require('body-parser'),
@@ -5,8 +15,190 @@ const express = require('express'),
       app = express();
 
 app.use(morgan('common'));  
-app.use(bodyParser.json()); 
+app.use(express.json());
+app.use(express.urlencoded({extended: true})); 
 
+
+
+//Welcome Page
+app.get('/', (req, res) => {
+    res.send('Welcome to my app!');
+});//end app.get
+
+//User info
+//CREATE -- new user
+app.post('/users', async (req, res) => {
+  await Users.findOne({ Username: req.body.Username })
+    .then((user) => {
+      if (user) {
+        return res.status(400).send(req.body.Username + 'already exists');
+      } else {
+        Users
+          .create({
+            Username: req.body.Username,
+            Password: req.body.Password,
+            Email: req.body.Email,
+            Birthday: req.body.Birthday
+          }) //end .create
+          .then((user) =>{res.status(201).json(user) })
+        .catch((error) => {
+          console.error(error);
+          res.status(500).send('Error: ' + error);
+        }) // end .catch
+      } //end else
+    }) // end then (user)
+    .catch((error) => {
+      console.error(error);
+      res.status(500).send('Error: ' + error);
+    });
+}); //END app.post(/users)
+
+
+//READ -- get all users
+app.get('/users', async (req, res) => {
+  await Users.find()
+  .then((users) => {
+    res.status(201).json(users);
+  })
+  .catch((err) => {
+    console.error(err);
+    res.status(500).send('Error ' + err);
+  });
+}); //END app.get(users)
+
+//READ -- get a user by name
+app.get('/users/:Username', async (req, res) => {
+  await Users.findOne({ Username: req.params.Username })
+    .then((user) => {
+      res.json(user);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+}); //END app.get(users/username)
+
+//UPDATE
+app.put('/user/:Username', async (req, res) => {
+  await Users.findOneAndUpdate({ Username: req.params.Username}, { $set:
+ {
+  Username: req.body.Username,
+  Password: req.body.Password,
+  Email: req.body.Email,
+  Birthday: req.body.Birthday
+ } 
+},
+{ new: true}) //This line makes sure that the updated document is retured
+  .then((updatedUser) => {
+    res.json(updatedUser);
+  })
+  .catch((err) => {
+    console.error(err);
+    res.status(500).send('Error: ' + err);
+  })
+}); //END update app.put(users/username)
+
+//CREATE -- add a movie to a user's list of favorite movies
+app.post('/users/:Username/movies/:MovieID', async (req, res) => {
+  await Users.findOneAndUpdate (
+    { Username: req.params.Username }, 
+    { $push: { FavoriteMovies: req.params.MovieID} },
+    {new: true}
+  ) // This line makes sure that the updated document is returned
+    .then((updatedUser) => {
+      res.json(updatedUser);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+}); //END update app.post user's fav movie
+
+// Delete a user by username
+app.delete('/users/:Username', async (req, res) => {
+  await Users.findOneAndRemove({ Username: req.params.Username })
+    .then((user) => {
+      if (!user) {
+        res.status(400).send(req.params.Username + ' was not found');
+      } else {
+        res.status(200).send(req.params.Username + ' was deleted.');
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+}); // END delete by username
+
+//Delete a favorite movie from username
+app.delete('/users/:Username/movies/:MovieID', async (req, res) => {
+  await Users.findOneAndUpdate(
+    { Username: req.params.Username},
+    {$pull: {FavoriteMovies: req.params.MovieID}},
+    { new: true }
+  )
+    .then((updatedUser) => {
+      res.json(updatedUser);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error ' + err);
+    });
+}); //END delete movie from username
+
+//MOVIES info
+//READ -- get all movies
+app.get('/movies', async (req, res) => {
+  await Movies.find()
+  .then((movie) => {
+    res.status(201).json(movie);
+  })
+  .catch((err) => {
+    console.error(err);
+    res.status(500).send('Error ' + err);
+  });
+}); //END app.get(movies)
+
+//READ -- a single movie
+app.get('/movies/:Title', async (req, res) => {
+  await Movies.findOne({ Title: req.params.Title })
+    .then((movie) => {
+      res.json(movie);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+});//END get movie by ID
+
+//READ -- genre by name
+app.get('/movies/genre/:genreName', async (req, res) => {
+  await Movies.findOne({ 'Genre.Name': req.params.genreName })
+    .then((movie) => {
+      res.status(200).json(movie.Genre);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+});//END get genre by name
+
+//READ - info about a director
+app.get('/movies/directors/:directorName', async (req, res) => {
+  await Movies.findOne({ 'Director.Name': req.params.directorName })
+    .then((movie) => {
+      res.json(movie.Director);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+});//END get director
+
+/*
+use bodyParser for Express versions below 4.16 - ref exercise 2.8
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true})); 
 
 let users = [
   {
@@ -31,7 +223,7 @@ let movies = [
     'Description': 'Set It Off is a 1996 American heist crime action film following four close friends in Los Angeles, California, who plan to execute a bank robbery—each doing so for different reasons—to achieve better for themselves and their families.',
     'Director': {
         'Name': 'F. Gary Gray',
-        'Bio': 'Felix Gary Gray began his career as a music video director including award-winning music videos "It Was a Good Day" by Ice Cube, "Waterfalls" by TLC, and "Ms. Jackson" by Outkast. Gray made his feature film directorial debut with the comedy Friday (1995). He has since directed the films Set It Off (1996), The Italian Job (2003), and Straight Outta Compton (2015). He also directed the eighth installment of the Fast & Furious franchise, The Fate of the Furious (2017)',
+        'Bio': 'Felix Gary Gray began his career as a music video director including award-winning music video "Waterfalls" by TLC. Gray made his feature film directorial debut with the comedy Friday (1995). He has since directed the films Set It Off (1996), The Italian Job (2003), and Straight Outta Compton (2015).',
         'Birth Year': 1969
     },
     'ImageURL': 'https://en.wikipedia.org/wiki/Set_It_Off_(film)#/media/File:Set_it_off_poster.jpg',
@@ -72,10 +264,6 @@ let movies = [
 ] // END movies variable in json  
 
 
-app.get('/', (req, res) => {
-    res.send('Welcome to my app!');
-});//end app.get
-
 //CREATE
 app.post('/users', (req, res) => {
     const newUser = req.body;
@@ -88,6 +276,7 @@ app.post('/users', (req, res) => {
       res.status(400).send('users need name')
     }
 });//end app.post(/users)
+
 
 //UPDATE
 app.put('/users/:id', (req, res) => {
@@ -194,7 +383,7 @@ app.get('/movies/directors/:directorName', (req, res) =>{
   }
 
 }); //end app.get(movies/directors/:directorName)
-
+*/
 
 app.use(express.static('public'));
 
