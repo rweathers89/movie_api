@@ -18,6 +18,10 @@ app.use(morgan('common'));
 app.use(express.json());
 app.use(express.urlencoded({extended: true})); 
 
+let auth = require('./auth')(app);
+
+const passport = require('passport');
+require('./passport');
 
 
 //Welcome Page
@@ -55,7 +59,9 @@ app.post('/users', async (req, res) => {
 
 
 //READ -- get all users
-app.get('/users', async (req, res) => {
+app.get('/users', 
+  passport.authenticate('jwt', {session: false}),
+  async (req, res) => {
   await Users.find()
   .then((users) => {
     res.status(201).json(users);
@@ -67,7 +73,9 @@ app.get('/users', async (req, res) => {
 }); //END app.get(users)
 
 //READ -- get a user by name
-app.get('/users/:Username', async (req, res) => {
+app.get('/users/:Username', 
+  passport.authenticate('jwt', {session: false}),
+  async (req, res) => {
   await Users.findOne({ Username: req.params.Username })
     .then((user) => {
       res.json(user);
@@ -79,16 +87,23 @@ app.get('/users/:Username', async (req, res) => {
 }); //END app.get(users/username)
 
 //UPDATE
-app.put('/user/:Username', async (req, res) => {
-  await Users.findOneAndUpdate({ Username: req.params.Username}, { $set:
- {
-  Username: req.body.Username,
-  Password: req.body.Password,
-  Email: req.body.Email,
-  Birthday: req.body.Birthday
- } 
-},
-{ new: true}) //This line makes sure that the updated document is retured
+app.put('/user/:Username', 
+  passport.authenticate('jwt', {session: false}),
+  async (req, res) => {
+  //Condition to check added here
+  if(req.user.Username !== req.params.Username){
+      return res.status(400).send('Permission denied');
+  } // Condition Ends
+  await Users.findOneAndUpdate({ Username: req.params.Username}, 
+  { $set:
+    {
+      Username: req.body.Username,
+      Password: req.body.Password,
+      Email: req.body.Email,
+      Birthday: req.body.Birthday
+    } 
+  },
+  { new: true}) //This line makes sure that the updated document is retured
   .then((updatedUser) => {
     res.json(updatedUser);
   })
@@ -99,7 +114,9 @@ app.put('/user/:Username', async (req, res) => {
 }); //END update app.put(users/username)
 
 //CREATE -- add a movie to a user's list of favorite movies
-app.post('/users/:Username/movies/:MovieID', async (req, res) => {
+app.post('/users/:Username/movies/:MovieID', 
+  passport.authenticate('jwt', {session: false}),
+  async (req, res) => {
   await Users.findOneAndUpdate (
     { Username: req.params.Username }, 
     { $push: { FavoriteMovies: req.params.MovieID} },
@@ -115,7 +132,9 @@ app.post('/users/:Username/movies/:MovieID', async (req, res) => {
 }); //END update app.post user's fav movie
 
 // Delete a user by username
-app.delete('/users/:Username', async (req, res) => {
+app.delete('/users/:Username', 
+  passport.authenticate('jwt', {session: false}),
+  async (req, res) => {
   await Users.findOneAndRemove({ Username: req.params.Username })
     .then((user) => {
       if (!user) {
@@ -131,7 +150,9 @@ app.delete('/users/:Username', async (req, res) => {
 }); // END delete by username
 
 //Delete a favorite movie from username
-app.delete('/users/:Username/movies/:MovieID', async (req, res) => {
+app.delete('/users/:Username/movies/:MovieID', 
+  passport.authenticate('jwt', {session: false}),
+  async (req, res) => {
   await Users.findOneAndUpdate(
     { Username: req.params.Username},
     {$pull: {FavoriteMovies: req.params.MovieID}},
@@ -148,19 +169,21 @@ app.delete('/users/:Username/movies/:MovieID', async (req, res) => {
 
 //MOVIES info
 //READ -- get all movies
-app.get('/movies', async (req, res) => {
+app.get('/movies', passport.authenticate('jwt', { session: false }), 
+  async (req, res) => {
   await Movies.find()
-  .then((movie) => {
-    res.status(201).json(movie);
+  .then((movies) => {
+    res.status(201).json(movies);
   })
-  .catch((err) => {
-    console.error(err);
-    res.status(500).send('Error ' + err);
+  .catch((error) => {
+    console.error(error);
+    res.status(500).send('Error ' + error);
   });
 }); //END app.get(movies)
 
 //READ -- a single movie
-app.get('/movies/:Title', async (req, res) => {
+app.get('/movies/:Title', passport.authenticate('jwt', { session: false }), 
+  async (req, res) => {
   await Movies.findOne({ Title: req.params.Title })
     .then((movie) => {
       res.json(movie);
@@ -172,7 +195,9 @@ app.get('/movies/:Title', async (req, res) => {
 });//END get movie by ID
 
 //READ -- genre by name
-app.get('/movies/genre/:genreName', async (req, res) => {
+app.get('/movies/genre/:genreName', 
+  passport.authenticate('jwt', {session: false}),
+  async (req, res) => {
   await Movies.findOne({ 'Genre.Name': req.params.genreName })
     .then((movie) => {
       res.status(200).json(movie.Genre);
@@ -184,7 +209,9 @@ app.get('/movies/genre/:genreName', async (req, res) => {
 });//END get genre by name
 
 //READ - info about a director
-app.get('/movies/directors/:directorName', async (req, res) => {
+app.get('/movies/directors/:directorName', 
+  passport.authenticate('jwt', {session: false}),  
+  async (req, res) => {
   await Movies.findOne({ 'Director.Name': req.params.directorName })
     .then((movie) => {
       res.json(movie.Director);
@@ -194,6 +221,19 @@ app.get('/movies/directors/:directorName', async (req, res) => {
       res.status(500).send('Error: ' + err);
     });
 });//END get director
+
+app.use(express.static('public'));
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+
+app.listen(8080, () => {
+  console.log('Your app is listening to port 8080.')
+});//end app.listen
+
+console.log('My first Node test server is running on Port 8080.');
 
 /*
 use bodyParser for Express versions below 4.16 - ref exercise 2.8
@@ -385,18 +425,7 @@ app.get('/movies/directors/:directorName', (req, res) =>{
 }); //end app.get(movies/directors/:directorName)
 */
 
-app.use(express.static('public'));
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
-
-app.listen(8080, () => {
-  console.log('Your app is listening to port 8080.')
-});//end app.listen
-
-console.log('My first Node test server is running on Port 8080.');
 
 /*const http = require('http'),
     url = require('url');
