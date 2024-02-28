@@ -1,12 +1,15 @@
 //Import necessary libraries and modules
 const mongoose = require('mongoose'); // mongoose for interacting with MongoDB
 const Models = require('./models.js'); // import custome data models
+const {check, validationResult } = require('express-validator');
 
 const Movies = Models.Movie;
 const Users = Models.User;
 
-mongoose.connect('mongodb://localhost:27017/cfDB', 
+mongoose.connect('process.env.CONNECTION_URI', 
 { useNewUrlParser: true, useUnifiedTopology: true });
+//mongoose.connect('mongodb://localhost:27017/cfDB', 
+//{ useNewUrlParser: true, useUnifiedTopology: true });
 
 const express = require('express'), 
       morgan = require('morgan'),
@@ -17,6 +20,24 @@ const express = require('express'),
 app.use(morgan('common'));  
 app.use(express.json());
 app.use(express.urlencoded({extended: true})); 
+
+const cors = require('cors');
+app.use(cors()); //allows requests from all origins
+
+//replace app.use(cors()) with code below to ONLY allow CERTAIN origins
+/*
+let allowedOrigins = ['http://localhost:8080', 'http://testsite.com'];
+app.use(cors({
+  origin: (origin, callback) => {
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1) { //if a specific origin isn't found on the list of allowed origins
+      let message = 'The CORS policy for this application doesn't allow access from origin ' + origin;
+      return callback(new Error(message ), false);
+    }
+    return callback(null, true);
+  }
+})); //END app.use(cors)
+ */
 
 let auth = require('./auth')(app);
 
@@ -31,8 +52,22 @@ app.get('/', (req, res) => {
 
 //User info
 //CREATE -- new user
-app.post('/users', async (req, res) => {
-  await Users.findOne({ Username: req.body.Username })
+app.post('/users', 
+  [
+    check('Username', 'Username is requires').isLength({min: 5}),
+    check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
+    check('Password', 'Password is required').not().isEmpty(),
+    check('Email', 'Email does not appear to be valid').isEmail()
+  ],
+  async (req, res) => {
+  //check the validation object for errors
+  let errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({errors: errors.array()});  
+  }
+
+  let hashedPassword = Users.hashPassword(req.body.Password);
+  await Users.findOne({ Username: req.body.Username }) // Search to see if a user with the requested username already exists
     .then((user) => {
       if (user) {
         return res.status(400).send(req.body.Username + 'already exists');
@@ -40,7 +75,7 @@ app.post('/users', async (req, res) => {
         Users
           .create({
             Username: req.body.Username,
-            Password: req.body.Password,
+            Password: hashedPassword,
             Email: req.body.Email,
             Birthday: req.body.Birthday
           }) //end .create
@@ -87,9 +122,21 @@ app.get('/users/:Username',
 }); //END app.get(users/username)
 
 //UPDATE
-app.put('/user/:Username', 
+app.put('/user/:Username', [
+  //validation
+  check('Username', 'Username is required').notEmpty(),
+  check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
+  check('Password', 'Password is required').notEmpty(),
+  check('Email', 'Email does not appear to be valid').isEmail()
+],
   passport.authenticate('jwt', {session: false}),
   async (req, res) => {
+    //check validation object errors
+  let errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({errors: errors.array()});
+  }
+
   //Condition to check added here
   if(req.user.Username !== req.params.Username){
       return res.status(400).send('Permission denied');
@@ -441,5 +488,3 @@ http.createServer((request, response) => {
   }
   
 }).listen(8080);*/
-
-
