@@ -6,7 +6,7 @@ const {check, validationResult } = require('express-validator');
 const Movies = Models.Movie;
 const Users = Models.User;
 
-mongoose.connect('process.env.CONNECTION_URI', 
+mongoose.connect(process.env.CONNECTION_URI, 
 { useNewUrlParser: true, useUnifiedTopology: true });
 //mongoose.connect('mongodb://localhost:27017/cfDB', 
 //{ useNewUrlParser: true, useUnifiedTopology: true });
@@ -488,3 +488,5 @@ http.createServer((request, response) => {
   }
   
 }).listen(8080);*/
+
+//mongoimport --uri mongodb+srv://myMovieMixAdmin:myMovieMix@cluster0.gzujiww.mongodb.net/cfDB --collection users --type json --file exportedCollections/users.json
