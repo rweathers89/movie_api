@@ -6,8 +6,10 @@ const {check, validationResult } = require('express-validator');
 const Movies = Models.Movie;
 const Users = Models.User;
 
+//connects to MongoDB Atlas database
 mongoose.connect(process.env.CONNECTION_URI, 
 { useNewUrlParser: true, useUnifiedTopology: true });
+//connects to local database. swap with .connect function above if needed.
 //mongoose.connect('mongodb://localhost:27017/cfDB', 
 //{ useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -278,7 +280,7 @@ app.use((err, req, res, next) => {
 
 const port = process.env.PORT || 8080;
  app.listen(port, '0.0.0.0', () => {
-  console.log('Listening on port ' + port)
+  console.log('Listening on Port ' + port)
 });//end app.listen
 
 console.log('My first Node test server is running on Port 8080.');
