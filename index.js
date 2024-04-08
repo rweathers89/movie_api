@@ -28,7 +28,10 @@ const cors = require('cors');
 
 //replace app.use(cors()) with code below to ONLY allow CERTAIN origins
 
-let allowedOrigins = ['http://localhost:8080', 'http://testsite.com', 'http://localhost:1234', "https://movie-api-nj6m.onrender.com/"];
+let allowedOrigins = ['http://localhost:8080',
+  'http://testsite.com',
+  'http://localhost:1234', 'https://movie-api-nj6m.onrender.com/',
+  'https://mymoviemix-rweathers-c19185.netlify.app/login'];
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
