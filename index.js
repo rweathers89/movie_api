@@ -222,7 +222,9 @@ app.delete('/users/:Username/movies/:MovieID',
 
 //MOVIES info
 //READ -- get all movies
-app.get('/movies', passport.authenticate('jwt', { session: false }),
+app.get('/movies',
+  // add back after testing endpoint >>> 
+  // , passport.authenticate('jwt', { session: false })
   async (req, res) => {
     await Movies.find()
       .then((movies) => {
