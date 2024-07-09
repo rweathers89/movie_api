@@ -49,14 +49,26 @@ let auth = require('./auth')(app);
 const passport = require('passport');
 require('./passport');
 
-
-//Welcome Page
+/**
+ * Welcome Page
+ * @name /
+ * @function
+ * @returns {string} Welcome message
+ */
 app.get('/', (req, res) => {
   res.send('Welcome to my app!');
 });//end app.get
 
-//User info
+//USER INFO
 //CREATE -- new user
+/**
+ * Create a new user
+ * @name CreateUser
+ * @function
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @returns {Object} The created user object
+ */
 app.post('/users',
   [
     check('Username', 'Username is requires').isLength({ min: 5 }),
@@ -99,6 +111,14 @@ app.post('/users',
 
 
 //READ -- get all users
+/**
+ * Get a list of all users
+ * @name GetUsers
+ * @function
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @returns {Object[]} Array of user objects
+ */
 app.get('/users',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
@@ -127,6 +147,14 @@ app.get('/users/:Username',
   }); //END app.get(users/username)
 
 //UPDATE
+/**
+ * Update user information
+ * @name UpdateUser
+ * @function
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @returns {Object} The updated user object
+ */
 app.put('/user/:Username', [
   //validation
   check('Username', 'Username is required').notEmpty(),
@@ -167,6 +195,14 @@ app.put('/user/:Username', [
   }); //END update app.put(users/username)
 
 //CREATE -- add a movie to a user's list of favorite movies
+/**
+ * Add a favorite movie to a user's list
+ * @name AddFavoriteMovie
+ * @function
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @returns {Object} The updated user object
+ */
 app.post('/users/:Username/movies/:MovieID',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
@@ -185,6 +221,14 @@ app.post('/users/:Username/movies/:MovieID',
   }); //END update app.post user's fav movie
 
 // Delete a user by username
+/**
+ * Delete a user by username
+ * @name DeleteUser
+ * @function
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @returns {string} Success message
+ */
 app.delete('/users/:Username',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
@@ -203,6 +247,14 @@ app.delete('/users/:Username',
   }); // END delete by username
 
 //Delete a favorite movie from username
+/**
+ * Remove a favorite movie from a user's list
+ * @name RemoveFavoriteMovie
+ * @function
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @returns {Object} The updated user object
+ */
 app.delete('/users/:Username/movies/:MovieID',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
@@ -222,6 +274,14 @@ app.delete('/users/:Username/movies/:MovieID',
 
 //MOVIES info
 //READ -- get all movies
+/**
+ * Get a list of all movies
+ * @name GetMovies
+ * @function
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @returns {Object[]} Array of movie objects
+ */
 app.get('/movies', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     await Movies.find()
@@ -235,6 +295,14 @@ app.get('/movies', passport.authenticate('jwt', { session: false }),
   }); //END app.get(movies)
 
 //READ -- a single movie
+/**
+ * Get a movie by title
+ * @name GetMovieByTitle
+ * @function
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @returns {Object} The movie object
+ */
 app.get('/movies/:Title', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     await Movies.findOne({ Title: req.params.Title })
@@ -248,6 +316,16 @@ app.get('/movies/:Title', passport.authenticate('jwt', { session: false }),
   });//END get movie by ID
 
 //READ -- genre by name
+/**
+ * Get genres from movies
+ * @name GetGenresFromMovies
+ * @function
+ * @memberof module:routes
+ * @inner
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @returns {Object[]} Array of movie objects
+ */
 app.get('/movies/genre/:genreName',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
@@ -262,6 +340,15 @@ app.get('/movies/genre/:genreName',
   });//END get genre by name
 
 //READ - info about a director
+/**
+ * Get data about a director by name
+ * @name GetDirector
+ * @function
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @param {string} name - The name of the director to retrieve
+ * @returns {Object} The director object
+ */
 app.get('/movies/directors/:directorName',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
@@ -282,6 +369,13 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
+/**
+ * Start the server
+ * @name StartServer
+ * @function
+ * @memberof module:server
+ * @param {number} port - The port number on which the server will listen
+ */
 const port = process.env.PORT || 8080;
 app.listen(port, '0.0.0.0', () => {
   console.log('Listening on Port ' + port)
@@ -289,211 +383,3 @@ app.listen(port, '0.0.0.0', () => {
 
 console.log('My first Node test server is running on Port 8080.');
 
-/*
-use bodyParser for Express versions below 4.16 - ref exercise 2.8
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
-
-let users = [
-  {
-    id: 1,
-    name: 'Maxine',
-    favoriteMovies: []
-  },
-  {
-    id: 2,
-    name: 'Andre',
-    favoriteMovies: ['Hidden Figures']
-  },
-]
-
-let movies = [
-  {
-    'Title': 'Set it Off',
-    'Genre': {
-      'Name': 'Action',
-      'Description': 'A fast-paced, goal orientated narrative with elements of spectacular movements of bodies, vehicles, and weapons.',
-    },
-    'Description': 'Set It Off is a 1996 American heist crime action film following four close friends in Los Angeles, California, who plan to execute a bank robbery—each doing so for different reasons—to achieve better for themselves and their families.',
-    'Director': {
-        'Name': 'F. Gary Gray',
-        'Bio': 'Felix Gary Gray began his career as a music video director including award-winning music video "Waterfalls" by TLC. Gray made his feature film directorial debut with the comedy Friday (1995). He has since directed the films Set It Off (1996), The Italian Job (2003), and Straight Outta Compton (2015).',
-        'Birth Year': 1969
-    },
-    'ImageURL': 'https://en.wikipedia.org/wiki/Set_It_Off_(film)#/media/File:Set_it_off_poster.jpg',
-    'Release Year': 1996
-  },
-  {
-    'Title': 'Real Women Have Curves',
-    'Genre': {
-      'Name': 'Comedy',
-      'Description': 'Comedies are designed to elicit laughter from the audience, crafted to amuse, entertain, and provoke enjoyment.',
-    },
-    'Description': 'Based on the play of the same name by Josefina López, Real Women Have Curves is a story of a first generation Mexican-American girl and her passage to womanhood. Although she wants to go away to college, she must battle against the views of her parents, who think she should stay at home and provide for the family.',
-    'Director': {
-        'Name': 'Patricia Cardoso',
-        'Bio': 'Patricia Cardoso is a Colombian-American filmmaker and anthropologist. She was the first Latin woman to win a Sundance Film Festival Dramatic Audience Award and to receive a Student Academy Award for Real Women Have Curves. Cardoso was also the first Latin woman to have a film in the Library of Congress National film Registry.',
-        'Birth Year': 1961
-    },
-    'ImageURL': 'https://en.wikipedia.org/wiki/Real_Women_Have_Curves#/media/File:Real_Women_Have_Curves_film_poster.jpg',
-    'Release Year': 2002
-
-  },
-  {
-    'Title': 'Hidden Figures',
-    'Genre': {
-      'Name': 'Drama',
-      'Description': 'Dramas delve into the complexities of human emotions and stimulate deep contemplation and introspection.',
-    },
-    'Description': 'The story of a team of female African-American mathematicians who served a vital role in NASA during the early years of the U.S. space program.',
-    'Director': {
-        'Name': 'Theodore Melfi',
-        'Bio': 'Theodore Melfi is a filmmaker who co-wrote, directed, and produced Hidden Figures with Allison Schroeder, for which he received Oscar nominations for Best Picture and Best Adapted Screenplay. His other works include: St. Vincent, starring Bill Murry, Starling, Winding Roads, and a short film title Daughter.',
-        'Birth Year': 1970
-    },
-    'ImageURL': 'https://en.wikipedia.org/wiki/Hidden_Figures#/media/File:The_official_poster_for_the_film_Hidden_Figures,_2016.jpg',
-    'Release Year': 2016
-
-  }
-] // END movies variable in json
-
-
-//CREATE
-app.post('/users', (req, res) => {
-    const newUser = req.body;
-
-    if(newUser.name) {
-      newUser.id = uuid.v4();
-      users.push(newUser);
-      res.status(201).json(newUser)
-    } else {
-      res.status(400).send('users need name')
-    }
-});//end app.post(/users)
-
-
-//UPDATE
-app.put('/users/:id', (req, res) => {
-  const { id } = req.params;
-  const updatedUser = req.body;
-
-  let user = users.find(user => user.id == id);
-
-  if(user) {
-    user.name = updatedUser.name;
-    res.status(200).json(user);
-  } else {
-    res.status(400).send('no such user')
-  }
-
-});//end app.put(/users/:id)
-
-//CREATE
-app.post('/users/:id/:movieTitle', (req, res) => {
-  const { id, movieTitle } = req.params;
-
-  let user = users.find(user => user.id == id);
-
-  if(user) {
-    user.favoriteMovies.push(movieTitle);
-    res.status(200).send(`${movieTitle} has been added to user ${id}'s array`);
-  } else {
-    res.status(400).send('no such user')
-  }
-
-});//end app.post(/users/:id/:movieTitle)
-
-//DELETE
-app.delete('/users/:id/:movieTitle', (req, res) => {
-  const { id, movieTitle } = req.params;
-
-  let user = users.find(user => user.id == id);
-
-  if(user) {
-    user.favoriteMovies = user.favoriteMovies.filter(title => title !== movieTitle);
-    res.status(200).send(`${movieTitle} has been removed from user ${id}'s array`);
-  } else {
-    res.status(400).send('no such user')
-  }
-
-});//end app.delete(/users/:id/:movieTitle)
-
-//DELETE
-app.delete('/users/:id', (req, res) => {
-  const { id } = req.params;
-
-  let user = users.find(user => user.id == id);
-
-  if(user) {
-    users = users.filter(user => user.id !== id);
-    //res.json(users)
-    res.status(200).send(`user ${id} has been deleted`);
-  } else {
-    res.status(400).send('no such user')
-  }
-
-});//end app.delete(/users/:id)
-
-//READ
-app.get('/movies', (req, res) => {
-  res.status(200).json(movies);
-});//end app.get /movies
-
-//READ
-app.get('/movies/:title', (req, res) =>{
-  const { title } = req.params;
-  const movie = movies.find(movie => movie.Title === title);
-
-  if (movie) {
-    res.status(200).json(movie)
-  } else {
-    res.status(400).send('no such movie')
-  }
-
-}); //end app.get(movies/:title)
-
-//READ
-app.get('/movies/genre/:genreName', (req, res) =>{
-  const {genreName} = req.params;
-  const genre = movies.find(movie => movie.Genre.Name === genreName).Genre;
-
-  if (genre) {
-    res.status(200).json(genre)
-  } else {
-    res.status(400).send('no such genre')
-  }
-
-}); //end app.get(movies/genre/:genreName)
-
-//READ
-app.get('/movies/directors/:directorName', (req, res) =>{
-  const {directorName} = req.params;
-  const director = movies.find(movie => movie.Director.Name === directorName).Director;
-
-  if (director) {
-    res.status(200).json(director)
-  } else {
-    res.status(400).send('no such director')
-  }
-
-}); //end app.get(movies/directors/:directorName)
-*/
-
-
-
-/*const http = require('http'),
-    url = require('url');
-
-http.createServer((request, response) => {
-  let requestURL = url.parse(request.url, true);
-  if (request.url.pathname == '/documentation.html') {
-    response.writeHead(200, {'Content-Type': 'text/plain'});
-  response.end('Documentation on the bookclub API.\n');
-  } else {
-    response.writeHead(200, {'Content-Type': 'text/plain'});
-  response.end('Welcome to my book club!\n');
-  }
-
-}).listen(8080);*/
-
-//mongoimport --uri mongodb+srv://myMovieMixAdmin:myMovieMix@cluster0.gzujiww.mongodb.net/cfDB --collection users --type json --file exportedCollections/users.json
